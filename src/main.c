@@ -3,12 +3,15 @@
 #include "nrf_delay.h"
 #include "boards.h"
 #include "./modules/gpio.h"
+#include "./modules/logger.h"
 
 int main(void)
 {
     gpio_init();
+    logger_init();
 
     /* Configure LEDs. */
+    NRF_LOG_INFO("Initialize Configuration");
     const int COUNTS[4] = {6, 5, 9, 8};
     const int DELAY = 500;
 
@@ -20,6 +23,7 @@ int main(void)
     int current_led_repeats = 0;
 
     /* Toggle LEDs. */
+    NRF_LOG_INFO("Start blinking");
     while (true)
     {
         bool is_pressed = gpio_button_is_pressed(BUTTON_IDX);
@@ -37,11 +41,14 @@ int main(void)
 
             /* update led index */
             if (current_led_repeats == 0) {
+                NRF_LOG_INFO("Change led");
                 current_led_idx += 1;
                 if (current_led_idx >= LEDS_NUMBER) {
                     current_led_idx = 0;
                 }
             }
         }
+
+        logger_process();
     }
 }

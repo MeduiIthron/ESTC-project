@@ -18,7 +18,6 @@ void led_init () {
         nrf_gpio_cfg_output (gpio_leds_list[i]);
         led_off (i);
     }
-    nrfx_systick_init ();
     nrfx_systick_get (&timer_on);
 }
 

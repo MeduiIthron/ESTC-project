@@ -2,6 +2,7 @@
 #include "../led.h"
 #include "../button.h"
 #include "../logger.h"
+#include "nrfx_systick.h"
 
 // Application State
 static ApplicationConfig cfg;
@@ -9,10 +10,12 @@ static uint32_t currentLed;
 static uint32_t currentRepeats;
 static bool previousIsEnableDirection;
 static bool currentIsEnableDirection;
+static bool enabled;
 
 // Initialization
 void application_init (ApplicationConfig config) {
     cfg = config;
+    nrfx_systick_init ();
     button_init ();
     led_init ();
     if (cfg.enableLogger) {
@@ -23,10 +26,14 @@ void application_init (ApplicationConfig config) {
     currentRepeats = 0;
     previousIsEnableDirection = true;
     currentIsEnableDirection = true;
+    enabled = false;
 }
 
 // Main Loop
 void application_update () {
+    if( button_is_double_click ())
+        enabled = !enabled;
+
     // Switching Led
     if (currentRepeats >= cfg.ledRepeatSequence[currentLed] * 2) {
         logger_log ("Switching to next LED");
@@ -40,7 +47,7 @@ void application_update () {
     }
 
     // Toggle led if button is pressed
-    if (button_is_pressed (cfg.buttonIdx) || !cfg.enableButton) {
+    if (enabled || !cfg.enableButton) {
         currentIsEnableDirection = led_smooth_toggle (currentLed, currentIsEnableDirection);
     }
     else {
@@ -57,6 +64,7 @@ void application_update () {
     if (cfg.enableLogger) {
         logger_process ();
     }
+    button_update ();
 }
 
 ApplicationConfig application_get_config () {

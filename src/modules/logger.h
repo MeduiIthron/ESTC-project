@@ -1,21 +1,8 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef ESTC_PROJECT_LOGGER_H
+#define ESTC_PROJECT_LOGGER_H
 
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
-#include "nrf_log_backend_usb.h"
+void logger_init ();
+void logger_process ();
+void logger_log (const char* msg);
 
-
-void logger_init() {
-    ret_code_t err_code = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(err_code);
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-}
-
-void logger_process() {
-    LOG_BACKEND_USB_PROCESS();
-    NRF_LOG_PROCESS();
-}
-
-#endif
+#endif //ESTC_PROJECT_LOGGER_H

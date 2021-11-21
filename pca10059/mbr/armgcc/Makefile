@@ -4,7 +4,7 @@ OUTPUT_DIRECTORY := _build
 DFU_PORT         ?= /dev/ttyACM0
 
 include ../../../src/includes.mk
-SDK_ROOT ?= ../../../../../devel/ESTC-NSDK
+SDK_ROOT ?= ../../../../sdk/ESTC-NSDK
 PROJ_DIR := ../../..
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
@@ -15,6 +15,9 @@ SRC_FILES += \
   $(PROJECT_SOURCES) \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
   $(SDK_ROOT)/components/boards/boards.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_systick.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_timer.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_power.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_uart.c \

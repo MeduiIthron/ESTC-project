@@ -919,7 +919,7 @@
 // <e> GPIOTE_ENABLED - nrf_drv_gpiote - GPIOTE peripheral driver - legacy layer
 //==========================================================
 #ifndef GPIOTE_ENABLED
-#define GPIOTE_ENABLED 0
+#define GPIOTE_ENABLED 1
 #endif
 // <o> GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS - Number of lower power input pins 
 #ifndef GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS
@@ -5065,7 +5065,7 @@
  
 
 #ifndef SYSTICK_ENABLED
-#define SYSTICK_ENABLED 0
+#define SYSTICK_ENABLED 1
 #endif
 
 // <e> TIMER_ENABLED - nrf_drv_timer - TIMER periperal driver - legacy layer

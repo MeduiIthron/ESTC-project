@@ -4,7 +4,7 @@ OUTPUT_DIRECTORY := _build
 DFU_PORT         ?= /dev/ttyACM0
 
 include ../../../src/includes.mk
-SDK_ROOT ?= ../../../../devel/ESTC-NSDK
+SDK_ROOT ?= ../../../../../devel/ESTC-NSDK
 PROJ_DIR := ../../..
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \

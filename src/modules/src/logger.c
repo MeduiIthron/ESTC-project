@@ -6,13 +6,8 @@
 #include "../logger.h"
 
 void logger_init () {
-<<<<<<< Updated upstream
     ret_code_t err_code = NRF_LOG_INIT (NULL);
     APP_ERROR_CHECK (err_code);
-=======
-    ret_code_t errCode = NRF_LOG_INIT (NULL);
-    APP_ERROR_CHECK (errCode);
->>>>>>> Stashed changes
     NRF_LOG_DEFAULT_BACKENDS_INIT ();
 }
 

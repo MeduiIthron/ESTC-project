@@ -3,12 +3,12 @@
 int main (void) {
     // Configuration
     const ApplicationConfig config = {
-        {6, 5, 9, 8},           // Led Sequence
-        0,                      // Button ID
-        true,                   // Use button?
-        true                    // Use Logger?
+        .ledRepeatSequence = {6, 5, 9, 8},   // Led Sequence
+        .buttonIdx = 0,                      // Button ID
+        .enableButton = true,                // Use button?
+        .enableLogger = true                 // Use Logger?
     };
-    application_init (config);
+    application_init (&config);
 
     // Main Loop
     while (true) {

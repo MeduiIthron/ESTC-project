@@ -1,5 +1,5 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#ifndef ESTC_PROJECT_APPLICATION_H
+#define ESTC_PROJECT_APPLICATION_H
 
 #include "boards.h"
 
@@ -10,8 +10,15 @@ typedef struct ApplicationConfig {
     bool enableLogger;
 } ApplicationConfig;
 
-void application_init (ApplicationConfig config);
-void application_update ();
-ApplicationConfig application_get_config ();
+typedef struct ApplicationData {
+    uint32_t currentLed;
+    uint32_t currentRepeats;
+    bool previousIsEnableDirection;
+    bool currentIsEnableDirection;
+    bool enabled;
+} ApplicationData;
 
-#endif
+void application_init (const ApplicationConfig* config);
+void application_update ();
+
+#endif //ESTC_PROJECT_APPLICATION_H

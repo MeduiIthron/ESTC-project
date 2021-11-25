@@ -80,3 +80,49 @@ bool led_smooth_toggle (const uint32_t ledIdx, const bool isEnableDirection) {
     }
     return toggleResult;
 }
+
+bool led_smooth_toggle_fast (const uint32_t ledIdx, const bool isEnableDirection) {
+    // Led State
+    static int time_process_start = 0;
+    static int time_process_stop = PWM_PERIOD_MS / 2;
+    static bool isEnabledProcess = false;
+    static bool isTickComplete = false;
+    bool toggleResult = isEnableDirection;
+
+    // Smooth toggle process
+    if (nrfx_systick_test (&timer_on, time_process_start)) {
+        if (!isEnabledProcess) {
+            led_off (ledIdx);
+            isEnabledProcess = true;
+        }
+        if (!isTickComplete) {
+            nrfx_systick_get (&timer_off);
+            isTickComplete = true;
+        }
+        if (nrfx_systick_test (&timer_off, time_process_stop)) {
+            led_on (ledIdx);
+            isEnabledProcess = false;
+            nrfx_systick_get(&timer_on);
+
+            // Update Ticks Bounds
+            if (isEnableDirection) {
+                time_process_start += 1;
+                time_process_stop -= 1;
+            }
+            else {
+                time_process_start -= 1;
+                time_process_stop += 1;
+            }
+
+            // Complete Tick
+            bool isCompleteEnableProcess = (time_process_start == PWM_PERIOD_MS / 2 && time_process_stop == 0 && isEnableDirection);
+            bool isCompleteDisableProcess = (time_process_start == 0 && time_process_stop == PWM_PERIOD_MS / 2 && !isEnableDirection);
+            if (isCompleteEnableProcess || isCompleteDisableProcess) {
+                toggleResult = !isEnableDirection;
+            }
+
+            isTickComplete = false;
+        }
+    }
+    return toggleResult;
+}

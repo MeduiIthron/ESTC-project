@@ -4,6 +4,7 @@
 #include "assert.h"
 
 #include "../button.h"
+#include "../logger.h"
 
 // Buttons Config
 const uint32_t GPIO_BUTTONS_LIST[BUTTONS_NUMBER] = BUTTONS_LIST;
@@ -16,6 +17,8 @@ static void (*buttonOnDoubleClick)(void) = NULL;
 // Double Click Timer
 APP_TIMER_DEF(DOUBLE_CLICK_TIMER_ID);
 bool wasSingleClick = false;
+bool isPressed = false;
+bool isLongClick = false;
 
 void button_evt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 void timer_evt_handler(void* context);
@@ -27,8 +30,7 @@ void button_init () {
     }
 
     nrfx_gpiote_init();
-    nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
-    config.sense = NRF_GPIOTE_POLARITY_HITOLO;
+    nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
     config.pull = BUTTON_PULL;
     nrfx_gpiote_in_init(BUTTON_1, &config, &button_evt_handler);
     nrfx_gpiote_in_event_enable(BUTTON_1, true);
@@ -37,9 +39,12 @@ void button_init () {
     APP_ERROR_CHECK(app_timer_create(&DOUBLE_CLICK_TIMER_ID, APP_TIMER_MODE_SINGLE_SHOT, &timer_evt_handler));
 }
 
-bool button_is_pressed(const uint32_t btn_idx) {
-    assert (btn_idx < BUTTONS_NUMBER);
-    return nrf_gpio_pin_read (GPIO_BUTTONS_LIST[btn_idx]) == BUTTONS_ACTIVE_STATE;
+bool button_is_pressed() {
+    return isPressed;
+}
+
+bool button_is_long_click () {
+    return isPressed && isLongClick;
 }
 
 // Event Callbacks Registry
@@ -53,19 +58,27 @@ void button_on_double_click (void (*eventHandler)(void)) {
 
 // Event Handlers
 void button_evt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
-    if (action == NRF_GPIOTE_POLARITY_HITOLO){
+    isPressed = !isPressed;
+    if (isPressed){
+        app_timer_stop(DOUBLE_CLICK_TIMER_ID);
+        isLongClick = false;
         if (wasSingleClick) {
             buttonOnDoubleClick ();
             wasSingleClick = false;
+            return;
         }
         else {
             wasSingleClick = true;
             app_timer_start(DOUBLE_CLICK_TIMER_ID, BUTTON_DOUBLE_CLICK_TIMEOUT, NULL);
         }
     }
+    else {
+        isLongClick = false;
+    }
 }
 
 void timer_evt_handler(void* context)
 {
+    isLongClick = isPressed;
     wasSingleClick = false;
 }

@@ -24,6 +24,5 @@ typedef struct ApplicationData {
 
 void application_init (const ApplicationConfig* config);
 void application_update ();
-void application_next_state ();
 
 #endif //ESTC_PROJECT_APPLICATION_H

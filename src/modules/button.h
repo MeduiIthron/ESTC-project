@@ -2,9 +2,12 @@
 #define ESTC_PROJECT_BUTTON_H
 
 void button_init ();
+void button_on_click_begin (void (*eventHandler)(void));
+void button_on_click_end (void (*eventHandler)(void));
+void button_on_long_click_begin (void (*eventHandler)(void));
+void button_on_long_click_end (void (*eventHandler)(void));
 void button_on_click (void (*eventHandler)(void));
 void button_on_double_click (void (*eventHandler)(void));
-bool button_is_pressed ();
-bool button_is_long_click ();
+void button_on_long_click (void (*eventHandler)(void));
 
 #endif //ESTC_PROJECT_BUTTON_H

@@ -7,109 +7,96 @@
 #include "../led.h"
 #include "../button.h"
 #include "../rgb_led.h"
+#include "../indicate_led.h"
+#include "../memory.h"
+
+/// Application state machine
+void application_on_double_click ();
+void application_on_long_click_begin ();
+void application_on_long_click_end ();
 
 APP_TIMER_DEF(led_timer);
+APP_TIMER_DEF(indicate_timer);
 
 // Application Data
 static ApplicationConfig config;
 static ApplicationData data;
-static uint32_t indicateLed;
 static RGBColor currentRGBColor = {0, 0, 0};
 static HSBColor currentHSBColor = { 0, 100, 100};
+static uint32_t indicateBrightness;
+static uint32_t indicateBrightnessModifier;
 
-#define ZERO 0
-#define HUE_STEP_DELAY_TICKS APP_TIMER_TICKS(50) //Blink time: 360 * 10 = 3600 ms
-#define SATURATION_STEP_DELAY_TICKS APP_TIMER_TICKS(50) //Blink time: 100 * 10 = 1000 ms
-#define BRIGHTNESS_STEP_DELAY_TICKS APP_TIMER_TICKS(50) //Blink time: 100 * 5 = 500 ms
+#define STATE_UPDATE_DELAY_TICKS APP_TIMER_TICKS(50)
 
 void led_timer_handler(void *context);
-bool test = false;
+void indicate_timer_handler(void *context);
 
 // Initialization
 void application_init (const ApplicationConfig* cfg) {
-    // Initialize Configuration and Data
+    /// Initialize Configuration and Data
     config = *cfg;
     data.currentState = APP_STATE_OFF;
-    data.currentIsEnableDirection = true;
-    data.previousIsEnableDirection = true;
+    indicateBrightness = 0;
+    indicateBrightnessModifier = 1;
 
-    currentRGBColor = color_hsb_to_rgb(&currentHSBColor);
-
-    // Initialize Modules
+    /// Initialize Systick
     nrfx_systick_init ();
-    button_init ();
-    led_init ();
-    rgb_led_init ();
-    if (config.enableLogger) {
-        logger_init ();
-    }
 
-    // Register Callbacks
-    rgb_led_set_color(&currentRGBColor);
-    rgb_led_on();
-    button_on_double_click(&application_next_state);
+    /// Initialize LED Module
+    led_init ();
+
+    /// Initialize Indicate Module
+    indicate_led_init ();
+    indicate_led_set_brightness(indicateBrightness);
+    indicate_led_on ();
+
+    /// Initialize Button Module
+    button_init ();
+    button_on_double_click (&application_on_double_click);
+    button_on_long_click_begin (&application_on_long_click_begin);
+    button_on_click_end (&application_on_long_click_end);
+
+    /// Initialize RGB LED Module
+    memory_load_color (&currentHSBColor);
+    currentRGBColor = color_hsb_to_rgb (&currentHSBColor);
+    rgb_led_init ();
+    rgb_led_set_color (&currentRGBColor);
+    rgb_led_on ();
+
+    /// Initialize Logger Module
+    logger_init ();
+
+    /// Initialize Blinking Timers
     app_timer_create(&led_timer, APP_TIMER_MODE_REPEATED, led_timer_handler);
+    app_timer_stop(led_timer);
+    app_timer_create(&indicate_timer, APP_TIMER_MODE_REPEATED, indicate_timer_handler);
+    app_timer_stop(indicate_timer);
+    app_timer_start(indicate_timer, STATE_UPDATE_DELAY_TICKS, NULL);
 }
 
 // Main Loop
 void application_update () {
-    uint32_t state = data.currentState;
-
-    switch (state) {
-        case APP_STATE_OFF:
-            led_off (indicateLed);
-            break;
-        case APP_STATE_CHANGE_HUE:
-            data.currentIsEnableDirection = led_smooth_toggle (indicateLed, data.currentIsEnableDirection);
-            if (data.previousIsEnableDirection != data.currentIsEnableDirection) {
-                data.previousIsEnableDirection = data.currentIsEnableDirection;
-            }
-            break;
-        case APP_STATE_CHANGE_SATURATION:
-            data.currentIsEnableDirection = led_smooth_toggle_fast (indicateLed, data.currentIsEnableDirection);
-            if (data.previousIsEnableDirection != data.currentIsEnableDirection) {
-                data.previousIsEnableDirection = data.currentIsEnableDirection;
-            }
-            break;
-        case APP_STATE_CHANGE_BRIGHTNESS:
-            led_on (indicateLed);
-            break;
-    }
-
-    // Update Log
-    if (config.enableLogger) {
-        logger_process ();
-    }
-    if (button_is_long_click()) {
-        if (test) {
-            switch (state) {
-                case APP_STATE_CHANGE_HUE:
-                    app_timer_start(led_timer, HUE_STEP_DELAY_TICKS, NULL);
-                    break;
-                case APP_STATE_CHANGE_SATURATION:
-                    app_timer_start(led_timer, SATURATION_STEP_DELAY_TICKS, NULL);
-                    break;
-                case APP_STATE_CHANGE_BRIGHTNESS:
-                    app_timer_start(led_timer, BRIGHTNESS_STEP_DELAY_TICKS, NULL);
-                    break;
-            }
-            test = false;
-        }
-    }
-    else {
-        test = true;
-        app_timer_stop(led_timer);
-    }
+    /// Update Log
+    logger_process ();
 }
 
-// Callbacks
-void application_next_state () {
+// Application State Machine
+void application_on_double_click () {
     if (data.currentState + 1 < APP_STATE_COUNT) {
         data.currentState += 1;
     }
     else {
         data.currentState = 0;
+        memory_save_color(&currentHSBColor);
     }
+}
+
+void application_on_long_click_begin () {
+    app_timer_start(led_timer, STATE_UPDATE_DELAY_TICKS, NULL);
+}
+
+void application_on_long_click_end () {
+    app_timer_stop(led_timer);
 }
 
 void change_hsb_color () {
@@ -132,8 +119,40 @@ void change_hsb_color () {
     }
 }
 
+void blink () {
+    switch (data.currentState) {
+        case APP_STATE_CHANGE_HUE: {
+            indicateBrightness += 4 * indicateBrightnessModifier;
+            if (indicateBrightness >= 100 || indicateBrightness <= 0)
+                indicateBrightnessModifier *= -1;
+            break;
+        }
+        case APP_STATE_CHANGE_SATURATION: {
+            indicateBrightness += 8 * indicateBrightnessModifier;
+            if (indicateBrightness >= 100 || indicateBrightness <= 0)
+                indicateBrightnessModifier *= -1;
+            break;
+        }
+        case APP_STATE_CHANGE_BRIGHTNESS: {
+            indicateBrightness = 100;
+            indicateBrightnessModifier = 0;
+            break;
+        }
+        case APP_STATE_OFF: {
+            indicateBrightness = 0;
+            indicateBrightnessModifier = 1;
+            break;
+        }
+    }
+}
+
 void led_timer_handler(void *context) {
     change_hsb_color();
     currentRGBColor = color_hsb_to_rgb(&currentHSBColor);
     rgb_led_set_color(&currentRGBColor);
+}
+
+void indicate_timer_handler(void *context) {
+    blink();
+    indicate_led_set_brightness(indicateBrightness);
 }

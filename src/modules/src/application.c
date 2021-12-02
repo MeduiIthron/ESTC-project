@@ -128,7 +128,7 @@ void blink () {
             break;
         }
         case APP_STATE_CHANGE_SATURATION: {
-            indicateBrightness += 8 * indicateBrightnessModifier;
+            indicateBrightness += 16 * indicateBrightnessModifier;
             if (indicateBrightness >= 100 || indicateBrightness <= 0)
                 indicateBrightnessModifier *= -1;
             break;

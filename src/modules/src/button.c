@@ -70,7 +70,7 @@ void button_on_long_click (void (*eventHandler)(void)) {
 }
 
 void button_event_handler (nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
-    buttonIsPressed = !buttonIsPressed;
+    buttonIsPressed = nrf_gpio_pin_read(GPIO_BUTTONS_LIST[0]) == BUTTONS_ACTIVE_STATE;
 
     if (buttonLongClick) {
         if (buttonOnLongClickEnd != NULL) {

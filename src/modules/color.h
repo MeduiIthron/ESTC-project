@@ -16,6 +16,5 @@ typedef struct HSBColor {
 } HSBColor;
 
 RGBColor color_hsb_to_rgb (HSBColor* color);
-HSBColor color_rgb_to_hsb (RGBColor* color);
 
 #endif //ESTC_PROJECT_COLOR_H

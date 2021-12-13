@@ -1,28 +1,27 @@
 #ifndef ESTC_PROJECT_APPLICATION_H
 #define ESTC_PROJECT_APPLICATION_H
 
-#include "boards.h"
+#include "stdint.h"
+#include "color.h"
 
-#define APP_STATE_COUNT 4
-#define APP_STATE_OFF 0
-#define APP_STATE_CHANGE_HUE 1
-#define APP_STATE_CHANGE_SATURATION 2
-#define APP_STATE_CHANGE_BRIGHTNESS 3
+typedef enum application_state_t {
+    CHANGE_OFF = 0,
+    CHANGE_HUE = 1,
+    CHANGE_SATURATION = 2,
+    CHANGE_BRIGHTNESS = 3
+} application_state_t;
 
-typedef struct ApplicationConfig {
-    int ledRepeatSequence[LEDS_NUMBER];
-    int buttonIdx;
-    bool enableButton;
-    bool enableLogger;
-} ApplicationConfig;
+#define APPLICATION_STATE_COUNT 4
 
-typedef struct ApplicationData {
-    uint32_t currentState;
-    bool previousIsEnableDirection;
-    bool currentIsEnableDirection;
-} ApplicationData;
+typedef struct application_data_t {
+    application_state_t current_state;
+    rgb_color_t current_rgb_color;
+    hsb_color_t current_hsb_color;
+    uint16_t indicate_brightness;
+    uint16_t indicate_brightness_modifier;
+} application_data_t;
 
-void application_init (const ApplicationConfig* config);
+void application_init ();
 void application_update ();
 
 #endif //ESTC_PROJECT_APPLICATION_H

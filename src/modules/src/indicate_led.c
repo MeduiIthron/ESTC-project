@@ -1,8 +1,9 @@
+#include "stdint.h"
 #include "nrfx_pwm.h"
+#include "boards.h"
 
 #include "../led.h"
 #include "../indicate_led.h"
-#include "../logger.h"
 
 #define PWM_MAX_VALUE 1000.0
 #define PWM_CONFIG { \
@@ -49,7 +50,7 @@ void indicate_led_on () {
     nrfx_pwm_simple_playback (&pwm_instance, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
 }
 
-void indicate_led_set_brightness (const uint32_t value) {
+void indicate_led_set_brightness (const uint16_t value) {
     *brightness = (uint16_t)(((float)value) / 100 * PWM_MAX_VALUE);
 }
 

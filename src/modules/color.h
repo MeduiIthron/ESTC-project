@@ -1,20 +1,20 @@
 #ifndef ESTC_PROJECT_COLOR_H
 #define ESTC_PROJECT_COLOR_H
 
-#include "boards.h"
+#include "stdint.h"
 
-typedef struct RGBColor {
+typedef struct rgb_color_t {
     uint32_t red;
     uint32_t green;
     uint32_t blue;
-} RGBColor;
+} rgb_color_t;
 
-typedef struct HSBColor {
+typedef struct hsb_color_t {
     uint32_t hue;
     uint32_t saturation;
     uint32_t brightness;
-} HSBColor;
+} hsb_color_t;
 
-RGBColor color_hsb_to_rgb (HSBColor* color);
+rgb_color_t color_hsb_to_rgb (hsb_color_t* color);
 
 #endif //ESTC_PROJECT_COLOR_H

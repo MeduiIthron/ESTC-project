@@ -1,9 +1,12 @@
+#include "stdint.h"
+#include "stdio.h"
 #include "boards.h"
-#include "assert.h"
 
 #include "../led.h"
+#include "../logger.h"
 
 const uint32_t GPIO_LEDS_LIST[LEDS_NUMBER] = LEDS_LIST;
+bool led_check (const led_idx_t led_idx);
 
 void led_init () {
     for (uint32_t i = 0; i < LEDS_NUMBER; i += 1) {
@@ -12,17 +15,28 @@ void led_init () {
     }
 }
 
-void led_on (const uint32_t ledIdx) {
-    assert (ledIdx < LEDS_NUMBER);
-    nrf_gpio_pin_write (GPIO_LEDS_LIST[ledIdx], LEDS_ACTIVE_STATE);
+void led_on (const led_idx_t led_idx) {
+    if (!led_check (led_idx))
+        return;
+    nrf_gpio_pin_write (GPIO_LEDS_LIST[led_idx], LEDS_ACTIVE_STATE);
 }
 
-void led_off (const uint32_t ledIdx) {
-    assert (ledIdx < LEDS_NUMBER);
-    nrf_gpio_pin_write (GPIO_LEDS_LIST[ledIdx], !LEDS_ACTIVE_STATE);
+void led_off (const led_idx_t led_idx) {
+    if (!led_check (led_idx))
+        return;
+    nrf_gpio_pin_write (GPIO_LEDS_LIST[led_idx], !LEDS_ACTIVE_STATE);
 }
 
-void led_invert (const uint32_t ledIdx) {
-    assert (ledIdx < LEDS_NUMBER);
-    nrf_gpio_pin_toggle (GPIO_LEDS_LIST[ledIdx]);
+void led_invert (const led_idx_t led_idx) {
+    if (!led_check (led_idx))
+        return;
+    nrf_gpio_pin_toggle (GPIO_LEDS_LIST[led_idx]);
+}
+
+bool led_check (const led_idx_t led_idx) {
+    if (led_idx >= LEDS_NUMBER) {
+        logger_error("Invalid LED ID");
+        return false;
+    }
+    return true;
 }

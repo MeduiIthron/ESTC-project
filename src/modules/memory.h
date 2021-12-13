@@ -3,7 +3,8 @@
 
 #include "color.h"
 
-void memory_save_color (HSBColor* color);
-void memory_load_color (HSBColor* color);
+void memory_clean ();
+void memory_save_hsb_color (hsb_color_t* color);
+void memory_load_hsb_color (hsb_color_t* color);
 
 #endif //ESTC_PROJECT_MEMORY_H

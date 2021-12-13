@@ -1,12 +1,13 @@
-#include "assert.h"
+#include "stdint.h"
+
 #include "../color.h"
 
-RGBColor color_hsb_to_rgb (HSBColor* color) {
+rgb_color_t color_hsb_to_rgb (hsb_color_t * color) {
     uint32_t hue = color->hue % 361;
     uint32_t saturation = color->saturation % 101;
     uint32_t brightness = color->brightness % 101;
 
-    RGBColor resultColor;
+    rgb_color_t resultColor;
 
     uint32_t p = brightness * (100 - saturation) / 100;
     uint32_t a = (brightness - p) * (hue % 60) / 60;
